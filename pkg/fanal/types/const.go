@@ -72,6 +72,7 @@ const (
 	Pub           LangType = "pub"
 	Hex           LangType = "hex"
 	Bitnami       LangType = "bitnami"
+	Julia         LangType = "julia"
 
 	K8sUpstream LangType = "kubernetes"
 	EKS         LangType = "eks" // Amazon Elastic Kubernetes Service
@@ -131,4 +132,7 @@ const (
 	PubSpecLock = "pubspec.lock"
 
 	MixLock = "mix.lock"
+
+	JuliaProject  = "Project.toml"
+	JuliaManifest = "Manifest.toml"
 )
