@@ -15,8 +15,8 @@ import (
 	"golang.org/x/exp/slices"
 	"golang.org/x/xerrors"
 
-	julia "github.com/aquasecurity/go-dep-parser/pkg/julia/manifest"
-	godeptypes "github.com/aquasecurity/go-dep-parser/pkg/types"
+	julia "github.com/aquasecurity/trivy/pkg/dependency/parser/julia/manifest"
+	godeptypes "github.com/aquasecurity/trivy/pkg/dependency/parser/types"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer/language"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
