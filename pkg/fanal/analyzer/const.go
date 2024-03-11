@@ -93,6 +93,9 @@ const (
 	// Dart
 	TypePubSpecLock Type = "pubspec-lock"
 
+	// Julia
+	TypeJulia Type = "julia"
+
 	// ============
 	// Non-packaged
 	// ============
@@ -189,6 +192,7 @@ var (
 		TypeSwift,
 		TypePubSpecLock,
 		TypeMixLock,
+		TypeJulia,
 	}
 
 	// TypeLockfiles has all lock file analyzers

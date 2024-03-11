@@ -2,18 +2,19 @@ package cyclonedx_test
 
 import (
 	"context"
-	"github.com/package-url/packageurl-go"
 	"testing"
 	"time"
 
+	"github.com/package-url/packageurl-go"
+
 	cdx "github.com/CycloneDX/cyclonedx-go"
+	"github.com/aquasecurity/trivy-db/pkg/vulnsrc/vulnerability"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	dtypes "github.com/aquasecurity/trivy-db/pkg/types"
-	"github.com/aquasecurity/trivy-db/pkg/vulnsrc/vulnerability"
 	"github.com/aquasecurity/trivy/pkg/clock"
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/report"
@@ -2061,6 +2062,210 @@ func TestMarshaler_Marshal(t *testing.T) {
 						Dependencies: lo.ToPtr([]string{}),
 					},
 				},
+			},
+		},
+		{
+			name: "julia package with shadowed dep",
+			inputReport: types.Report{
+				SchemaVersion: report.SchemaVersion,
+				ArtifactName:  "julia",
+				ArtifactType:  ftypes.ArtifactFilesystem,
+				Results: types.Results{
+					{
+						Target: "app/Manifest.toml",
+						Class:  types.ClassLangPkg,
+						Type:   ftypes.Julia,
+						Packages: []ftypes.Package{
+							{
+								ID:        "ead4f63c-334e-11e9-00e6-e7f0a5f21b60",
+								Name:      "A",
+								Version:   "1.9.0",
+								Indirect:  false,
+								DependsOn: []string{"f41f7b98-334e-11e9-1257-49272045fb24"},
+								Identifier: ftypes.PkgIdentifier{
+									PURL: &packageurl.PackageURL{
+										Type:      packageurl.TypeJulia,
+										Namespace: "",
+										Name:      "A",
+										Version:   "1.9.0",
+										Qualifiers: packageurl.Qualifiers{
+											{
+												Key:   "uuid",
+												Value: "ead4f63c-334e-11e9-00e6-e7f0a5f21b60",
+											},
+										},
+									},
+								},
+							},
+							{
+								ID:        "f41f7b98-334e-11e9-1257-49272045fb24",
+								Name:      "B",
+								Version:   "1.9.0",
+								Indirect:  true,
+								DependsOn: nil,
+								Identifier: ftypes.PkgIdentifier{
+									PURL: &packageurl.PackageURL{
+										Type:      packageurl.TypeJulia,
+										Namespace: "",
+										Name:      "B",
+										Version:   "1.9.0",
+										Qualifiers: packageurl.Qualifiers{
+											{
+												Key:   "uuid",
+												Value: "f41f7b98-334e-11e9-1257-49272045fb24",
+											},
+										},
+									},
+								},
+							},
+							{
+								ID:        "edca9bc6-334e-11e9-3554-9595dbb4349c",
+								Name:      "B",
+								Version:   "1.9.0",
+								Indirect:  false,
+								DependsOn: nil,
+								Identifier: ftypes.PkgIdentifier{
+									PURL: &packageurl.PackageURL{
+										Type:      packageurl.TypeJulia,
+										Namespace: "",
+										Name:      "B",
+										Version:   "1.9.0",
+										Qualifiers: packageurl.Qualifiers{
+											{
+												Key:   "uuid",
+												Value: "edca9bc6-334e-11e9-3554-9595dbb4349c",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &cdx.BOM{
+				XMLNS:        "http://cyclonedx.org/schema/bom/1.5",
+				BOMFormat:    "CycloneDX",
+				SpecVersion:  cdx.SpecVersion1_5,
+				JSONSchema:   "http://cyclonedx.org/schema/bom-1.5.schema.json",
+				SerialNumber: "urn:uuid:3ff14136-e09f-4df9-80ea-000000000001",
+				Version:      1,
+				Metadata: &cdx.Metadata{
+					Timestamp: "2021-08-25T12:20:30+00:00",
+					Tools: &cdx.ToolsChoice{
+						Components: &[]cdx.Component{
+							{
+								Type:    cdx.ComponentTypeApplication,
+								Name:    "trivy",
+								Group:   "aquasecurity",
+								Version: "dev",
+							},
+						},
+					},
+					Component: &cdx.Component{
+						Type:   cdx.ComponentTypeApplication,
+						Name:   "julia",
+						BOMRef: "3ff14136-e09f-4df9-80ea-000000000002",
+						Properties: &[]cdx.Property{
+							{
+								Name:  "aquasecurity:trivy:SchemaVersion",
+								Value: "2",
+							},
+						},
+					},
+				},
+				Components: &[]cdx.Component{
+					{
+						BOMRef:  "3ff14136-e09f-4df9-80ea-000000000003",
+						Type:    cdx.ComponentTypeApplication,
+						Name:    "app/Manifest.toml",
+						Version: "",
+						Properties: &[]cdx.Property{
+							{
+								Name:  "aquasecurity:trivy:Class",
+								Value: "lang-pkgs",
+							},
+							{
+								Name:  "aquasecurity:trivy:Type",
+								Value: "julia",
+							},
+						},
+					},
+					{
+						BOMRef:     "pkg:julia/A@1.9.0?uuid=ead4f63c-334e-11e9-00e6-e7f0a5f21b60",
+						Type:       cdx.ComponentTypeLibrary,
+						Name:       "A",
+						Version:    "1.9.0",
+						PackageURL: "pkg:julia/A@1.9.0?uuid=ead4f63c-334e-11e9-00e6-e7f0a5f21b60",
+						Properties: &[]cdx.Property{
+							{
+								Name:  "aquasecurity:trivy:PkgID",
+								Value: "ead4f63c-334e-11e9-00e6-e7f0a5f21b60",
+							},
+							{
+								Name:  "aquasecurity:trivy:PkgType",
+								Value: "julia",
+							},
+						},
+					},
+					{
+						BOMRef:     "pkg:julia/B@1.9.0?uuid=edca9bc6-334e-11e9-3554-9595dbb4349c",
+						Type:       cdx.ComponentTypeLibrary,
+						Name:       "B",
+						Version:    "1.9.0",
+						PackageURL: "pkg:julia/B@1.9.0?uuid=edca9bc6-334e-11e9-3554-9595dbb4349c",
+						Properties: &[]cdx.Property{
+							{
+								Name:  "aquasecurity:trivy:PkgID",
+								Value: "edca9bc6-334e-11e9-3554-9595dbb4349c",
+							},
+							{
+								Name:  "aquasecurity:trivy:PkgType",
+								Value: "julia",
+							},
+						},
+					},
+					{
+						BOMRef:     "pkg:julia/B@1.9.0?uuid=f41f7b98-334e-11e9-1257-49272045fb24",
+						Type:       cdx.ComponentTypeLibrary,
+						Name:       "B",
+						Version:    "1.9.0",
+						PackageURL: "pkg:julia/B@1.9.0?uuid=f41f7b98-334e-11e9-1257-49272045fb24",
+						Properties: &[]cdx.Property{
+							{
+								Name:  "aquasecurity:trivy:PkgID",
+								Value: "f41f7b98-334e-11e9-1257-49272045fb24",
+							},
+							{
+								Name:  "aquasecurity:trivy:PkgType",
+								Value: "julia",
+							},
+						},
+					},
+				},
+				Dependencies: &[]cdx.Dependency{
+					{
+						Ref:          "3ff14136-e09f-4df9-80ea-000000000002",
+						Dependencies: lo.ToPtr([]string{"3ff14136-e09f-4df9-80ea-000000000003"}),
+					},
+					{
+						Ref:          "3ff14136-e09f-4df9-80ea-000000000003",
+						Dependencies: lo.ToPtr([]string{"pkg:julia/A@1.9.0?uuid=ead4f63c-334e-11e9-00e6-e7f0a5f21b60", "pkg:julia/B@1.9.0?uuid=edca9bc6-334e-11e9-3554-9595dbb4349c"}),
+					},
+					{
+						Ref:          "pkg:julia/A@1.9.0?uuid=ead4f63c-334e-11e9-00e6-e7f0a5f21b60",
+						Dependencies: lo.ToPtr([]string{"pkg:julia/B@1.9.0?uuid=f41f7b98-334e-11e9-1257-49272045fb24"}),
+					},
+					{
+						Ref:          "pkg:julia/B@1.9.0?uuid=edca9bc6-334e-11e9-3554-9595dbb4349c",
+						Dependencies: lo.ToPtr([]string{}),
+					},
+					{
+						Ref:          "pkg:julia/B@1.9.0?uuid=f41f7b98-334e-11e9-1257-49272045fb24",
+						Dependencies: lo.ToPtr([]string{}),
+					},
+				},
+				Vulnerabilities: &[]cdx.Vulnerability{},
 			},
 		},
 	}
